@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spring Boot STOMP Chat Example</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+    <div id="messages"></div>
+    <input type="text" id="message">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        var socket = new SockJS('/ws');
+        var stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame){
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/messages', function (res) {
+                showMessage(JSON.parse(res.body));
+            });
+        });
+
+        function sendMessage() {
+            var content = document.getElementById("message").value;
+            var message = { content: content };
+            stompClient.send("/app/chat", {}, JSON.stringify(message));
+        }
+
+        function showMessage(message){
+            var messageArea = document.getElementById("messages");
+            var messageElement = document.createElement("div");
+            messageElement.textContent = message.content;
+            messageArea.appendChild(messageElement);
+        }
+    </script>
+</body>
+</html>
